@@ -1,1 +1,5 @@
 lua_zlib.c export-subst ident
+
+# OneLuaPro
+CMakeLists.txt merge=ours
+CMakeLists.upstream.txt merge=ours
