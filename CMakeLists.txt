@@ -1,5 +1,7 @@
 # ------------------------------------------------------------------------------
 # CMake for lua-zlib for OneLuaPro
+# Original CMakeLists.txt now tracked as CMake.Lists.upstream.txt
+# See also https://copilot.microsoft.com/shares/gBFZXHVruW28fWx6nbA64
 # ------------------------------------------------------------------------------
 # Setup with Visual Studio 17 2022 generator for x64
 # ------------------------------------------------------------------------------
@@ -91,17 +93,24 @@ add_library(lua-zlib SHARED)
 target_include_directories(lua-zlib PRIVATE ${LIBLUA_INCLUDEDIR})
 # setup platform-specific sources, compile and linker options
 if(WIN32 AND NOT MinGW)
+  # Important definitions for DLL and symbol export
   add_definitions(-DLUA_BUILD_AS_DLL -DLUA_LIB)
-  target_compile_options(luacrc32c PRIVATE /D_WINDLL /D_WIN32 /D_CRT_SECURE_NO_WARNINGS)
+  # Specific definition for lzlib compatibility API
+  # add_definitions(-DLZLIB_COMPAT)
+  # set deviating library output name
+  set_target_properties(lua-zlib PROPERTIES PREFIX "")
+  set_target_properties(lua-zlib PROPERTIES OUTPUT_NAME zlib)
+  # Compile options
+  target_compile_options(lua-zlib PRIVATE /D_WINDLL /D_WIN32 /D_CRT_SECURE_NO_WARNINGS)
   # We silently assume zlib-ng is available with headers and static lib
-  target_link_options(luacrc32c PRIVATE /LIBPATH:${LIBLUA_LIBDIR} liblua.lib zlibstatic.lib)
+  target_link_options(lua-zlib PRIVATE /LIBPATH:${LIBLUA_LIBDIR} liblua.lib zlibstatic.lib)
 else()
   message(FATAL_ERROR "Not yet fully implemented.")
 endif()
 # plattform-independend sources
-target_sources(luacrc32c PRIVATE lua_zlib.c)
+target_sources(lua-zlib PRIVATE lua_zlib.c)
 # Install
-install(TARGETS luacrc32c RUNTIME DESTINATION ${INSTALL_TOP_CDIR})
+install(TARGETS lua-zlib RUNTIME DESTINATION ${INSTALL_TOP_CDIR})
 
 # ------------------------------------------------------------------------------
 # Install docs
