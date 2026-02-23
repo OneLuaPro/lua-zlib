@@ -91,24 +91,25 @@ set(INSTALL_TOP_LDIR
 add_library(lua-zlib SHARED)
 # setup lua include directory
 target_include_directories(lua-zlib PRIVATE ${LIBLUA_INCLUDEDIR})
+# plattform-independend sources
+target_sources(lua-zlib PRIVATE lua_zlib.c)
 # setup platform-specific sources, compile and linker options
 if(WIN32 AND NOT MinGW)
   # Important definitions for DLL and symbol export
-  add_definitions(-DLUA_BUILD_AS_DLL -DLUA_LIB)
-  # Specific definition for lzlib compatibility API
-  # add_definitions(-DLZLIB_COMPAT)
+  target_compile_definitions(lua-zlib PRIVATE
+    LUA_BUILD_AS_DLL LUA_LIB
+    _WINDLL _WIN32 _CRT_SECURE_NO_WARNINGS
+  )
   # set deviating library output name
   set_target_properties(lua-zlib PROPERTIES PREFIX "")
   set_target_properties(lua-zlib PROPERTIES OUTPUT_NAME zlib)
   # Compile options
-  target_compile_options(lua-zlib PRIVATE /D_WINDLL /D_WIN32 /D_CRT_SECURE_NO_WARNINGS)
+  target_link_directories(lua-zlib PRIVATE ${LIBLUA_LIBDIR})
   # We silently assume zlib-ng is available with headers and static lib
-  target_link_options(lua-zlib PRIVATE /LIBPATH:${LIBLUA_LIBDIR} liblua.lib zlibstatic.lib)
+  target_link_libraries(lua-zlib PRIVATE liblua zlibstatic)
 else()
   message(FATAL_ERROR "Not yet fully implemented.")
 endif()
-# plattform-independend sources
-target_sources(lua-zlib PRIVATE lua_zlib.c)
 # Install
 install(TARGETS lua-zlib RUNTIME DESTINATION ${INSTALL_TOP_CDIR})
 
